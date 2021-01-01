@@ -1,0 +1,27 @@
+things to maybe do
+
+
+make the division library not put all the rooms in a spool, come out from the corners differently
+    //design it so you NEVER enter areas through the edge of the ring
+add something that looks at every door room and removes any trees beyond it that has nothing but regular rooms
+    when i do this i should have it traverse, but be recursive when it hits branches
+    i should also have it mark rooms as alive, so when you hit branches that are already stated to be alive, you know they are immediately
+    also give an option to attempt to transfer fat zones to nonfat zones through non portals
+
+add archtypes that can be randomly added to seeds
+    tree
+    maybe a hex grid
+
+add other maze generators, that can flow into archtypes
+
+boss randomization of course
+
+weapon rebalance and/or weapon randimzation
+
+moving corridors around
+
+increase consecutive fire base as an option
+
+skip c0 as an option, move c0 perhaps?
+
+enemy pattern modifications
