@@ -6,7 +6,6 @@ use TGL\MapGen\Items\ItemGenerator;
 
 require_once("Generator.php");
 require_once("SplitMap.php");
-require_once("SourceRoms.php");
 require_once("Patcher.php");
 require_once("Helpers.php");
 require_once("EnemyBalancer.php");
@@ -20,7 +19,6 @@ echo "start\n";
 $generator = new Generator();
 
 $secret = false;
-$cheat = false;
 $fasterStartingFire = true;
 $generateItems=true;
 $patcher = new Patcher();
@@ -68,17 +66,13 @@ $hex = $map->writeHex();
 
 if($secret)
 {
-    $rom = SourceRoms::$secret;
-}
-else if($cheat)
-{
-    $rom = SourceRoms::$cheat;
+    $rawdata = file_get_contents("./sourceroms/secret4rando.nes");
 }
 else
 {
-    $rom = SourceRoms::$tgl;
+    $rawdata = file_get_contents("./sourceroms/tgl.nes");
 }
-
+$rom = bin2hex($rawdata);
 
 //patch the consecutive fire default value
 if($fasterStartingFire)
@@ -100,8 +94,8 @@ $patcher->writeRom("./output/".$filetag.date("Y-m-d-H-i-s").".nes",$rom);
 
 
 
-$myfile = fopen("./output/".$filetag.date("Y-m-d-H-i-s").".csv", "w") or die("Unable to open file!");
-fwrite($myfile, SplitMap::split($hex));
-fclose($myfile);
+$csvfile = fopen("./output/".$filetag.date("Y-m-d-H-i-s").".csv", "w") or die("Unable to open file!");
+fwrite($csvfile, SplitMap::split($hex));
+fclose($csvfile);
 
 

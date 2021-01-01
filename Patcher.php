@@ -36,7 +36,7 @@ class Patcher
             $offset = hexdec($change->offset) * 2;
             $patched = substr_replace($patched,$change->hex,$offset,strlen($change->hex));
         }
-        fwrite($file, pack("H*",$patched));
+        fwrite($file, hex2bin($patched));
         fclose($file);
     }
 }
