@@ -98,4 +98,4 @@ $csvfile = fopen("./output/".$filetag.date("Y-m-d-H-i-s").".csv", "w") or die("U
 fwrite($csvfile, SplitMap::split($hex));
 fclose($csvfile);
 
-
+EnemyBalancer::printStatistics();
