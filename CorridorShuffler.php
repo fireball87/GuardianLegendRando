@@ -86,6 +86,24 @@ class CorridorShuffler
     }
 
 
+    public static function randomizeMinibosses(Patcher $patcher, $allowMissingno)
+    {
+        //22 minibosses
+        //3 * a number between 0 and 11, 12 if i allow missingno
+        if($allowMissingno)
+            $monstervalues = 12;
+        else
+            $monstervalues = 11;
+
+        $datum = "";
+        for ($i = 0; $i < 22; $i++) {
+            $datum .= Helpers::inthex(rand(0,$monstervalues) * 3);
+        }
+
+        $patcher->addChange($datum,"1669D");
+    }
+
+
 
 
 }

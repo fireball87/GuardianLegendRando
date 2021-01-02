@@ -1,5 +1,6 @@
 things to maybe do
 
+fix grimgrin health to make fighting only last phase grimgrins less likely
 
 make the division library not put all the rooms in a spool, come out from the corners differently
     //design it so you NEVER enter areas through the edge of the ring
@@ -17,10 +18,6 @@ add other maze generators, that can flow into archtypes
 boss randomization of course
 
 weapon rebalance and/or weapon randimzation
-
-moving corridors around
-
-increase consecutive fire base as an option
 
 skip c0 as an option, move c0 perhaps?
 

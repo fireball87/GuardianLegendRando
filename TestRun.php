@@ -25,6 +25,7 @@ $patcher = new Patcher();
 
 $patchBalance = true; //can not be on if secret is on, must be on if corridor or boss shuffling is on, not required for miniboss shuffling, but certainly reccomended
 $shuffleCorridors = true;
+$randomizeMinibosses = true;
 
 
 if($generateItems)
@@ -47,10 +48,15 @@ if($patchBalance && !$secret)
     $patcher->addChange("20a9ff","1cfd0");
     $patcher->addChange("9d20062088fe60","1ffb9");
 
-    EnemyBalancer::rebalanceAll($patcher);
+    EnemyBalancer::rebalanceAll($patcher, true, true);
     if($shuffleCorridors)
     {
         CorridorShuffler::shuffleCorridors($patcher);
+    }
+
+    if($randomizeMinibosses)
+    {
+        CorridorShuffler::randomizeMinibosses($patcher, false);
     }
 }
 
