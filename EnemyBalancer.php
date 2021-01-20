@@ -43,6 +43,14 @@ abstract class Boss
     const BouncerRed = 92;
     const CrystalStar = 93;
     const Skull = 94;
+
+
+
+    const defSmall = 54;
+    const defLarge = 55;
+
+    const groundEyeSmall = 126;
+    const groundEyeBig = 127;
 }
 
 abstract class Health
@@ -85,6 +93,14 @@ abstract class Health
     const BouncerRed = 16 / 2;
     const CrystalStar = 13;
     const Skull = 18 / 2;
+
+    const defSmall = 4 * 8;
+    const defLarge = 8 * 8;
+
+    const groundEyeSmall = 24 / 2;
+    const groundEyeBig = 24 / 2;
+
+
 }
 
 
@@ -128,6 +144,13 @@ abstract class Damage
     const BouncerRed = 56 / 2;
     const CrystalStar = 48;
     const Skull = 64 / 2;
+
+
+    const defSmall = 32;
+    const defLarge = 32;
+
+    const groundEyeSmall = 32;
+    const groundEyeBig = 32;
 }
 
 
@@ -177,6 +200,11 @@ class EnemyBalancer
         $patcher->addChange(Helpers::inthex(Damage::BouncerRed),dechex($damageOffset+Boss::BouncerRed));
         $patcher->addChange(Helpers::inthex(Damage::CrystalStar),dechex($damageOffset+Boss::CrystalStar));
         $patcher->addChange(Helpers::inthex(Damage::Skull),dechex($damageOffset+Boss::Skull));
+
+
+
+        //bandaid patch for nails and homing eyes, fix later
+        $patcher->addChange("0606","1a22a");
     }
 
     static function shiftHealth(Patcher $patcher, bool $randomizeHealth)
@@ -218,6 +246,12 @@ class EnemyBalancer
             $patcher->addChange(Helpers::inthex(rand(4,12)),dechex($healthOffset+Boss::BouncerRed));
             $patcher->addChange(Helpers::inthex(rand(4,12)),dechex($healthOffset+Boss::CrystalStar));
             $patcher->addChange(Helpers::inthex(rand(4,12)),dechex($healthOffset+Boss::Skull));
+
+            $patcher->addChange(Helpers::inthex(rand(12,24)),dechex($healthOffset+Boss::defLarge));
+            $patcher->addChange(Helpers::inthex(rand(4,12)),dechex($healthOffset+Boss::defSmall));
+            $patcher->addChange(Helpers::inthex(rand(12,24)),dechex($healthOffset+Boss::groundEyeBig));
+            $patcher->addChange(Helpers::inthex(rand(4,12)),dechex($healthOffset+Boss::groundEyeSmall));
+
         }
         else
         {
@@ -252,6 +286,12 @@ class EnemyBalancer
             $patcher->addChange(Helpers::inthex(Health::BouncerRed),dechex($healthOffset+Boss::BouncerRed));
             $patcher->addChange(Helpers::inthex(Health::CrystalStar),dechex($healthOffset+Boss::CrystalStar));
             $patcher->addChange(Helpers::inthex(Health::Skull),dechex($healthOffset+Boss::Skull));
+
+            $patcher->addChange(Helpers::inthex(Health::defLarge),dechex($healthOffset+Boss::defLarge));
+            $patcher->addChange(Helpers::inthex(Health::defSmall),dechex($healthOffset+Boss::defSmall));
+            $patcher->addChange(Helpers::inthex(Health::groundEyeBig),dechex($healthOffset+Boss::groundEyeBig));
+            $patcher->addChange(Helpers::inthex(Health::groundEyeSmall),dechex($healthOffset+Boss::groundEyeSmall));
+
         }
 
 
