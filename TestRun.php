@@ -44,9 +44,6 @@ else
 
 if($patchBalance && !$secret)
 {
-    $patcher->addChange("606060","1c172");
-    $patcher->addChange("20a9ff","1cfd0");
-    $patcher->addChange("9d20062088fe60","1ffb9");
 
     EnemyBalancer::rebalanceAll($patcher, true, true);
     if($shuffleCorridors)

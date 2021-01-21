@@ -3,7 +3,7 @@
 
 namespace TGL\MapGen;
 
-abstract class Boss
+abstract class Entity
 {
     const EyegoreBlue = 24;
     const EyegoreRed = 25;
@@ -51,6 +51,9 @@ abstract class Boss
 
     const groundEyeSmall = 126;
     const groundEyeBig = 127;
+
+    const blueSkullEnemy = 22;
+    const redSkullEnemy = 23;
 }
 
 abstract class Health
@@ -100,7 +103,8 @@ abstract class Health
     const groundEyeSmall = 24 / 2;
     const groundEyeBig = 24 / 2;
 
-
+    const blueSkullEnemy = 16 / 4;
+    const redSkullEnemy = 16 / 4;
 }
 
 
@@ -146,11 +150,15 @@ abstract class Damage
     const Skull = 64 / 2;
 
 
-    const defSmall = 32;
-    const defLarge = 32;
+    //const defSmall = 32;
+    //const defLarge = 32;
 
-    const groundEyeSmall = 32;
-    const groundEyeBig = 32;
+    //const groundEyeSmall = 32;
+    //const groundEyeBig = 32;
+
+    const blueSkullEnemy = 96 / 4;
+    const redSkullEnemy = 96 / 4;
+
 }
 
 
@@ -161,50 +169,85 @@ class EnemyBalancer
 
     static function rebalanceAll(Patcher $patcher, bool $randomizeHealth, bool $randomizeDamage)
     {
+        $patcher->addChange("606060","1c172");
+        $patcher->addChange("20a9ff","1cfd0");
+        $patcher->addChange("9d20062088fe60","1ffb9");
+
         EnemyBalancer::shiftDamage($patcher);
         EnemyBalancer::shiftHealth($patcher, $randomizeHealth);
+
+        EnemyBalancer::shiftProjectiles($patcher);
     }
+
+    static function shiftProjectiles(Patcher $patcher)
+    {
+        /*        //bandaid patch for nails and homing eyes, fix later
+        $patcher->addChange("0606","1a22a");*/
+
+
+        //patch the health and damage tables to a normalized value
+        $patcher->addChange("1010101010101010","1A227");
+        $patcher->addChange("0505050505050505","1A21F");
+
+
+
+        //then we need to patch the code to be balanced
+        //patch the code we'll be jumping to
+        //jsr $c0a2
+        //20a2c0
+        //jmp $FE88 , jmp because it saves me writing a return here as i can just piggy back fe88s ret
+        //4c88fe
+        $patcher->addChange("20a2c04c88fe","1ffc0");
+
+        //patch the jump to this code, which is at
+        $patcher->addChange("20b0ff","1a11a");
+
+
+
+
+    }
+
     static function shiftDamage(Patcher $patcher)
     {
 
         $damageOffset = 119098;
 
-        $patcher->addChange(Helpers::inthex(Damage::EyegoreBlue),dechex($damageOffset+Boss::EyegoreBlue));
-        $patcher->addChange(Helpers::inthex(Damage::EyegoreRed),dechex($damageOffset+Boss::EyegoreRed));
-        $patcher->addChange(Helpers::inthex(Damage::Zibzub),dechex($damageOffset+Boss::Zibzub));
-        $patcher->addChange(Helpers::inthex(Damage::ClawbotGreen),dechex($damageOffset+Boss::ClawbotGreen));
-        $patcher->addChange(Helpers::inthex(Damage::ClawbotBlue),dechex($damageOffset+Boss::ClawbotBlue));
-        $patcher->addChange(Helpers::inthex(Damage::BombarderRed),dechex($damageOffset+Boss::BombarderRed));
-        $patcher->addChange(Helpers::inthex(Damage::OptomonGreen),dechex($damageOffset+Boss::OptomonGreen));
-        $patcher->addChange(Helpers::inthex(Damage::OptomonBlue),dechex($damageOffset+Boss::OptomonBlue));
-        $patcher->addChange(Helpers::inthex(Damage::OptomonRed),dechex($damageOffset+Boss::OptomonRed));
-        $patcher->addChange(Helpers::inthex(Damage::FleepaBlue),dechex($damageOffset+Boss::FleepaBlue));
-        $patcher->addChange(Helpers::inthex(Damage::FleepaRed),dechex($damageOffset+Boss::FleepaRed));
-        $patcher->addChange(Helpers::inthex(Damage::Crawdaddy),dechex($damageOffset+Boss::Crawdaddy));
-        $patcher->addChange(Helpers::inthex(Damage::Terramute),dechex($damageOffset+Boss::Terramute));
-        $patcher->addChange(Helpers::inthex(Damage::Glider),dechex($damageOffset+Boss::Glider));
-        $patcher->addChange(Helpers::inthex(Damage::GrimgrinBlue),dechex($damageOffset+Boss::GrimgrinBlue));
-        $patcher->addChange(Helpers::inthex(Damage::GrimgrinRed),dechex($damageOffset+Boss::GrimgrinRed));
-        $patcher->addChange(Helpers::inthex(Damage::BombarderBlue),dechex($damageOffset+Boss::BombarderBlue));
-        $patcher->addChange(Helpers::inthex(Damage::ClawbotRed),dechex($damageOffset+Boss::ClawbotRed));
-        $patcher->addChange(Helpers::inthex(Damage::It),dechex($damageOffset+Boss::It));
-        $patcher->addChange(Helpers::inthex(Damage::SpiderGreen),dechex($damageOffset+Boss::SpiderGreen));
-        $patcher->addChange(Helpers::inthex(Damage::SpiderBlue),dechex($damageOffset+Boss::SpiderBlue));
-        $patcher->addChange(Helpers::inthex(Damage::SpiderRed),dechex($damageOffset+Boss::SpiderRed));
-        $patcher->addChange(Helpers::inthex(Damage::CrabGreen),dechex($damageOffset+Boss::CrabGreen));
-        $patcher->addChange(Helpers::inthex(Damage::CrabBlue),dechex($damageOffset+Boss::CrabBlue));
-        $patcher->addChange(Helpers::inthex(Damage::CrabReb),dechex($damageOffset+Boss::CrabReb));
-        $patcher->addChange(Helpers::inthex(Damage::Carpet),dechex($damageOffset+Boss::Carpet));
-        $patcher->addChange(Helpers::inthex(Damage::BouncerGreen),dechex($damageOffset+Boss::BouncerGreen));
-        $patcher->addChange(Helpers::inthex(Damage::BouncerBlue),dechex($damageOffset+Boss::BouncerBlue));
-        $patcher->addChange(Helpers::inthex(Damage::BouncerRed),dechex($damageOffset+Boss::BouncerRed));
-        $patcher->addChange(Helpers::inthex(Damage::CrystalStar),dechex($damageOffset+Boss::CrystalStar));
-        $patcher->addChange(Helpers::inthex(Damage::Skull),dechex($damageOffset+Boss::Skull));
+        $patcher->addChange(Helpers::inthex(Damage::EyegoreBlue),dechex($damageOffset+Entity::EyegoreBlue));
+        $patcher->addChange(Helpers::inthex(Damage::EyegoreRed),dechex($damageOffset+Entity::EyegoreRed));
+        $patcher->addChange(Helpers::inthex(Damage::Zibzub),dechex($damageOffset+Entity::Zibzub));
+        $patcher->addChange(Helpers::inthex(Damage::ClawbotGreen),dechex($damageOffset+Entity::ClawbotGreen));
+        $patcher->addChange(Helpers::inthex(Damage::ClawbotBlue),dechex($damageOffset+Entity::ClawbotBlue));
+        $patcher->addChange(Helpers::inthex(Damage::BombarderRed),dechex($damageOffset+Entity::BombarderRed));
+        $patcher->addChange(Helpers::inthex(Damage::OptomonGreen),dechex($damageOffset+Entity::OptomonGreen));
+        $patcher->addChange(Helpers::inthex(Damage::OptomonBlue),dechex($damageOffset+Entity::OptomonBlue));
+        $patcher->addChange(Helpers::inthex(Damage::OptomonRed),dechex($damageOffset+Entity::OptomonRed));
+        $patcher->addChange(Helpers::inthex(Damage::FleepaBlue),dechex($damageOffset+Entity::FleepaBlue));
+        $patcher->addChange(Helpers::inthex(Damage::FleepaRed),dechex($damageOffset+Entity::FleepaRed));
+        $patcher->addChange(Helpers::inthex(Damage::Crawdaddy),dechex($damageOffset+Entity::Crawdaddy));
+        $patcher->addChange(Helpers::inthex(Damage::Terramute),dechex($damageOffset+Entity::Terramute));
+        $patcher->addChange(Helpers::inthex(Damage::Glider),dechex($damageOffset+Entity::Glider));
+        $patcher->addChange(Helpers::inthex(Damage::GrimgrinBlue),dechex($damageOffset+Entity::GrimgrinBlue));
+        $patcher->addChange(Helpers::inthex(Damage::GrimgrinRed),dechex($damageOffset+Entity::GrimgrinRed));
+        $patcher->addChange(Helpers::inthex(Damage::BombarderBlue),dechex($damageOffset+Entity::BombarderBlue));
+        $patcher->addChange(Helpers::inthex(Damage::ClawbotRed),dechex($damageOffset+Entity::ClawbotRed));
+        $patcher->addChange(Helpers::inthex(Damage::It),dechex($damageOffset+Entity::It));
+        $patcher->addChange(Helpers::inthex(Damage::SpiderGreen),dechex($damageOffset+Entity::SpiderGreen));
+        $patcher->addChange(Helpers::inthex(Damage::SpiderBlue),dechex($damageOffset+Entity::SpiderBlue));
+        $patcher->addChange(Helpers::inthex(Damage::SpiderRed),dechex($damageOffset+Entity::SpiderRed));
+        $patcher->addChange(Helpers::inthex(Damage::CrabGreen),dechex($damageOffset+Entity::CrabGreen));
+        $patcher->addChange(Helpers::inthex(Damage::CrabBlue),dechex($damageOffset+Entity::CrabBlue));
+        $patcher->addChange(Helpers::inthex(Damage::CrabReb),dechex($damageOffset+Entity::CrabReb));
+        $patcher->addChange(Helpers::inthex(Damage::Carpet),dechex($damageOffset+Entity::Carpet));
+        $patcher->addChange(Helpers::inthex(Damage::BouncerGreen),dechex($damageOffset+Entity::BouncerGreen));
+        $patcher->addChange(Helpers::inthex(Damage::BouncerBlue),dechex($damageOffset+Entity::BouncerBlue));
+        $patcher->addChange(Helpers::inthex(Damage::BouncerRed),dechex($damageOffset+Entity::BouncerRed));
+        $patcher->addChange(Helpers::inthex(Damage::CrystalStar),dechex($damageOffset+Entity::CrystalStar));
+        $patcher->addChange(Helpers::inthex(Damage::Skull),dechex($damageOffset+Entity::Skull));
 
 
+        $patcher->addChange(Helpers::inthex(Damage::redSkullEnemy),dechex($damageOffset+Damage::redSkullEnemy));
+        $patcher->addChange(Helpers::inthex(Damage::blueSkullEnemy),dechex($damageOffset+Damage::blueSkullEnemy));
 
-        //bandaid patch for nails and homing eyes, fix later
-        $patcher->addChange("0606","1a22a");
     }
 
     static function shiftHealth(Patcher $patcher, bool $randomizeHealth)
@@ -213,87 +256,91 @@ class EnemyBalancer
 
         if($randomizeHealth)
         {
-            $patcher->addChange(Helpers::inthex(rand(12,24)),dechex($healthOffset+Boss::EyegoreBlue));
-            $patcher->addChange(Helpers::inthex(rand(12,24)),dechex($healthOffset+Boss::EyegoreRed));
-            $patcher->addChange(Helpers::inthex(rand(12,24)),dechex($healthOffset+Boss::Zibzub));
-            $patcher->addChange(Helpers::inthex(rand(12,24)),dechex($healthOffset+Boss::ClawbotGreen));
-            $patcher->addChange(Helpers::inthex(rand(12,24)),dechex($healthOffset+Boss::ClawbotBlue));
-            $patcher->addChange(Helpers::inthex(rand(12,24)),dechex($healthOffset+Boss::ClawbotRed));
+            $patcher->addChange(Helpers::inthex(rand(12,24)),dechex($healthOffset+Entity::EyegoreBlue));
+            $patcher->addChange(Helpers::inthex(rand(12,24)),dechex($healthOffset+Entity::EyegoreRed));
+            $patcher->addChange(Helpers::inthex(rand(12,24)),dechex($healthOffset+Entity::Zibzub));
+            $patcher->addChange(Helpers::inthex(rand(12,24)),dechex($healthOffset+Entity::ClawbotGreen));
+            $patcher->addChange(Helpers::inthex(rand(12,24)),dechex($healthOffset+Entity::ClawbotBlue));
+            $patcher->addChange(Helpers::inthex(rand(12,24)),dechex($healthOffset+Entity::ClawbotRed));
 
-            $patcher->addChange(Helpers::inthex(rand(12,24)),dechex($healthOffset+Boss::OptomonGreen));
-            $patcher->addChange(Helpers::inthex(rand(12,24)),dechex($healthOffset+Boss::OptomonBlue));
-            $patcher->addChange(Helpers::inthex(rand(12,24)),dechex($healthOffset+Boss::OptomonRed));
-            $patcher->addChange(Helpers::inthex(rand(12,24)),dechex($healthOffset+Boss::FleepaBlue));
-            $patcher->addChange(Helpers::inthex(rand(12,24)),dechex($healthOffset+Boss::FleepaRed));
-            $patcher->addChange(Helpers::inthex(rand(12,24)),dechex($healthOffset+Boss::Crawdaddy));
-            $patcher->addChange(Helpers::inthex(rand(12,24)),dechex($healthOffset+Boss::Terramute));
-            $patcher->addChange(Helpers::inthex(rand(4,12)),dechex($healthOffset+Boss::Glider));
-            $patcher->addChange(Helpers::inthex(rand(12,24)),dechex($healthOffset+Boss::GrimgrinBlue));
-            $patcher->addChange(Helpers::inthex(rand(12,24)),dechex($healthOffset+Boss::GrimgrinRed));
-            $patcher->addChange(Helpers::inthex(rand(8,16)),dechex($healthOffset+Boss::BombarderBlue));
-            $patcher->addChange(Helpers::inthex(rand(8,16)),dechex($healthOffset+Boss::BombarderRed));
+            $patcher->addChange(Helpers::inthex(rand(12,24)),dechex($healthOffset+Entity::OptomonGreen));
+            $patcher->addChange(Helpers::inthex(rand(12,24)),dechex($healthOffset+Entity::OptomonBlue));
+            $patcher->addChange(Helpers::inthex(rand(12,24)),dechex($healthOffset+Entity::OptomonRed));
+            $patcher->addChange(Helpers::inthex(rand(12,24)),dechex($healthOffset+Entity::FleepaBlue));
+            $patcher->addChange(Helpers::inthex(rand(12,24)),dechex($healthOffset+Entity::FleepaRed));
+            $patcher->addChange(Helpers::inthex(rand(12,24)),dechex($healthOffset+Entity::Crawdaddy));
+            $patcher->addChange(Helpers::inthex(rand(12,24)),dechex($healthOffset+Entity::Terramute));
+            $patcher->addChange(Helpers::inthex(rand(4,12)),dechex($healthOffset+Entity::Glider));
+            $patcher->addChange(Helpers::inthex(rand(12,24)),dechex($healthOffset+Entity::GrimgrinBlue));
+            $patcher->addChange(Helpers::inthex(rand(12,24)),dechex($healthOffset+Entity::GrimgrinRed));
+            $patcher->addChange(Helpers::inthex(rand(8,16)),dechex($healthOffset+Entity::BombarderBlue));
+            $patcher->addChange(Helpers::inthex(rand(8,16)),dechex($healthOffset+Entity::BombarderRed));
 
-            $patcher->addChange(Helpers::inthex(rand(28,36)),dechex($healthOffset+Boss::It));
-            $patcher->addChange(Helpers::inthex(rand(4,12)),dechex($healthOffset+Boss::SpiderGreen));
-            $patcher->addChange(Helpers::inthex(rand(4,12)),dechex($healthOffset+Boss::SpiderBlue));
-            $patcher->addChange(Helpers::inthex(rand(4,12)),dechex($healthOffset+Boss::SpiderRed));
-            $patcher->addChange(Helpers::inthex(rand(4,12)),dechex($healthOffset+Boss::CrabGreen));
-            $patcher->addChange(Helpers::inthex(rand(4,12)),dechex($healthOffset+Boss::CrabBlue));
-            $patcher->addChange(Helpers::inthex(rand(4,12)),dechex($healthOffset+Boss::CrabReb));
-            $patcher->addChange(Helpers::inthex(rand(4,12)),dechex($healthOffset+Boss::Carpet));
-            $patcher->addChange(Helpers::inthex(rand(4,12)),dechex($healthOffset+Boss::BouncerGreen));
-            $patcher->addChange(Helpers::inthex(rand(4,12)),dechex($healthOffset+Boss::BouncerBlue));
-            $patcher->addChange(Helpers::inthex(rand(4,12)),dechex($healthOffset+Boss::BouncerRed));
-            $patcher->addChange(Helpers::inthex(rand(4,12)),dechex($healthOffset+Boss::CrystalStar));
-            $patcher->addChange(Helpers::inthex(rand(4,12)),dechex($healthOffset+Boss::Skull));
+            $patcher->addChange(Helpers::inthex(rand(28,36)),dechex($healthOffset+Entity::It));
+            $patcher->addChange(Helpers::inthex(rand(4,12)),dechex($healthOffset+Entity::SpiderGreen));
+            $patcher->addChange(Helpers::inthex(rand(4,12)),dechex($healthOffset+Entity::SpiderBlue));
+            $patcher->addChange(Helpers::inthex(rand(4,12)),dechex($healthOffset+Entity::SpiderRed));
+            $patcher->addChange(Helpers::inthex(rand(4,12)),dechex($healthOffset+Entity::CrabGreen));
+            $patcher->addChange(Helpers::inthex(rand(4,12)),dechex($healthOffset+Entity::CrabBlue));
+            $patcher->addChange(Helpers::inthex(rand(4,12)),dechex($healthOffset+Entity::CrabReb));
+            $patcher->addChange(Helpers::inthex(rand(4,12)),dechex($healthOffset+Entity::Carpet));
+            $patcher->addChange(Helpers::inthex(rand(4,12)),dechex($healthOffset+Entity::BouncerGreen));
+            $patcher->addChange(Helpers::inthex(rand(4,12)),dechex($healthOffset+Entity::BouncerBlue));
+            $patcher->addChange(Helpers::inthex(rand(4,12)),dechex($healthOffset+Entity::BouncerRed));
+            $patcher->addChange(Helpers::inthex(rand(4,12)),dechex($healthOffset+Entity::CrystalStar));
+            $patcher->addChange(Helpers::inthex(rand(4,12)),dechex($healthOffset+Entity::Skull));
 
-            $patcher->addChange(Helpers::inthex(rand(12,24)),dechex($healthOffset+Boss::defLarge));
-            $patcher->addChange(Helpers::inthex(rand(4,12)),dechex($healthOffset+Boss::defSmall));
-            $patcher->addChange(Helpers::inthex(rand(12,24)),dechex($healthOffset+Boss::groundEyeBig));
-            $patcher->addChange(Helpers::inthex(rand(4,12)),dechex($healthOffset+Boss::groundEyeSmall));
+
+            $patcher->addChange(Helpers::inthex(rand(12,24)),dechex($healthOffset+Entity::groundEyeBig));
+            $patcher->addChange(Helpers::inthex(rand(12,24)),dechex($healthOffset+Entity::groundEyeSmall));
 
         }
         else
         {
-            $patcher->addChange(Helpers::inthex(Health::EyegoreBlue),dechex($healthOffset+Boss::EyegoreBlue));
-            $patcher->addChange(Helpers::inthex(Health::EyegoreRed),dechex($healthOffset+Boss::EyegoreRed));
-            $patcher->addChange(Helpers::inthex(Health::Zibzub),dechex($healthOffset+Boss::Zibzub));
-            $patcher->addChange(Helpers::inthex(Health::ClawbotGreen),dechex($healthOffset+Boss::ClawbotGreen));
-            $patcher->addChange(Helpers::inthex(Health::ClawbotBlue),dechex($healthOffset+Boss::ClawbotBlue));
-            $patcher->addChange(Helpers::inthex(Health::BombarderRed),dechex($healthOffset+Boss::BombarderRed));
-            $patcher->addChange(Helpers::inthex(Health::OptomonGreen),dechex($healthOffset+Boss::OptomonGreen));
-            $patcher->addChange(Helpers::inthex(Health::OptomonBlue),dechex($healthOffset+Boss::OptomonBlue));
-            $patcher->addChange(Helpers::inthex(Health::OptomonRed),dechex($healthOffset+Boss::OptomonRed));
-            $patcher->addChange(Helpers::inthex(Health::FleepaBlue),dechex($healthOffset+Boss::FleepaBlue));
-            $patcher->addChange(Helpers::inthex(Health::FleepaRed),dechex($healthOffset+Boss::FleepaRed));
-            $patcher->addChange(Helpers::inthex(Health::Crawdaddy),dechex($healthOffset+Boss::Crawdaddy));
-            $patcher->addChange(Helpers::inthex(Health::Terramute),dechex($healthOffset+Boss::Terramute));
-            $patcher->addChange(Helpers::inthex(Health::Glider),dechex($healthOffset+Boss::Glider));
-            $patcher->addChange(Helpers::inthex(Health::GrimgrinBlue),dechex($healthOffset+Boss::GrimgrinBlue));
-            $patcher->addChange(Helpers::inthex(Health::GrimgrinRed),dechex($healthOffset+Boss::GrimgrinRed));
-            $patcher->addChange(Helpers::inthex(Health::BombarderBlue),dechex($healthOffset+Boss::BombarderBlue));
-            $patcher->addChange(Helpers::inthex(Health::ClawbotRed),dechex($healthOffset+Boss::ClawbotRed));
-            $patcher->addChange(Helpers::inthex(Health::It),dechex($healthOffset+Boss::It));
-            $patcher->addChange(Helpers::inthex(Health::SpiderGreen),dechex($healthOffset+Boss::SpiderGreen));
-            $patcher->addChange(Helpers::inthex(Health::SpiderBlue),dechex($healthOffset+Boss::SpiderBlue));
-            $patcher->addChange(Helpers::inthex(Health::SpiderRed),dechex($healthOffset+Boss::SpiderRed));
-            $patcher->addChange(Helpers::inthex(Health::CrabGreen),dechex($healthOffset+Boss::CrabGreen));
-            $patcher->addChange(Helpers::inthex(Health::CrabBlue),dechex($healthOffset+Boss::CrabBlue));
-            $patcher->addChange(Helpers::inthex(Health::CrabReb),dechex($healthOffset+Boss::CrabReb));
-            $patcher->addChange(Helpers::inthex(Health::Carpet),dechex($healthOffset+Boss::Carpet));
-            $patcher->addChange(Helpers::inthex(Health::BouncerGreen),dechex($healthOffset+Boss::BouncerGreen));
-            $patcher->addChange(Helpers::inthex(Health::BouncerBlue),dechex($healthOffset+Boss::BouncerBlue));
-            $patcher->addChange(Helpers::inthex(Health::BouncerRed),dechex($healthOffset+Boss::BouncerRed));
-            $patcher->addChange(Helpers::inthex(Health::CrystalStar),dechex($healthOffset+Boss::CrystalStar));
-            $patcher->addChange(Helpers::inthex(Health::Skull),dechex($healthOffset+Boss::Skull));
+            $patcher->addChange(Helpers::inthex(Health::EyegoreBlue),dechex($healthOffset+Entity::EyegoreBlue));
+            $patcher->addChange(Helpers::inthex(Health::EyegoreRed),dechex($healthOffset+Entity::EyegoreRed));
+            $patcher->addChange(Helpers::inthex(Health::Zibzub),dechex($healthOffset+Entity::Zibzub));
+            $patcher->addChange(Helpers::inthex(Health::ClawbotGreen),dechex($healthOffset+Entity::ClawbotGreen));
+            $patcher->addChange(Helpers::inthex(Health::ClawbotBlue),dechex($healthOffset+Entity::ClawbotBlue));
+            $patcher->addChange(Helpers::inthex(Health::BombarderRed),dechex($healthOffset+Entity::BombarderRed));
+            $patcher->addChange(Helpers::inthex(Health::OptomonGreen),dechex($healthOffset+Entity::OptomonGreen));
+            $patcher->addChange(Helpers::inthex(Health::OptomonBlue),dechex($healthOffset+Entity::OptomonBlue));
+            $patcher->addChange(Helpers::inthex(Health::OptomonRed),dechex($healthOffset+Entity::OptomonRed));
+            $patcher->addChange(Helpers::inthex(Health::FleepaBlue),dechex($healthOffset+Entity::FleepaBlue));
+            $patcher->addChange(Helpers::inthex(Health::FleepaRed),dechex($healthOffset+Entity::FleepaRed));
+            $patcher->addChange(Helpers::inthex(Health::Crawdaddy),dechex($healthOffset+Entity::Crawdaddy));
+            $patcher->addChange(Helpers::inthex(Health::Terramute),dechex($healthOffset+Entity::Terramute));
+            $patcher->addChange(Helpers::inthex(Health::Glider),dechex($healthOffset+Entity::Glider));
+            $patcher->addChange(Helpers::inthex(Health::GrimgrinBlue),dechex($healthOffset+Entity::GrimgrinBlue));
+            $patcher->addChange(Helpers::inthex(Health::GrimgrinRed),dechex($healthOffset+Entity::GrimgrinRed));
+            $patcher->addChange(Helpers::inthex(Health::BombarderBlue),dechex($healthOffset+Entity::BombarderBlue));
+            $patcher->addChange(Helpers::inthex(Health::ClawbotRed),dechex($healthOffset+Entity::ClawbotRed));
+            $patcher->addChange(Helpers::inthex(Health::It),dechex($healthOffset+Entity::It));
+            $patcher->addChange(Helpers::inthex(Health::SpiderGreen),dechex($healthOffset+Entity::SpiderGreen));
+            $patcher->addChange(Helpers::inthex(Health::SpiderBlue),dechex($healthOffset+Entity::SpiderBlue));
+            $patcher->addChange(Helpers::inthex(Health::SpiderRed),dechex($healthOffset+Entity::SpiderRed));
+            $patcher->addChange(Helpers::inthex(Health::CrabGreen),dechex($healthOffset+Entity::CrabGreen));
+            $patcher->addChange(Helpers::inthex(Health::CrabBlue),dechex($healthOffset+Entity::CrabBlue));
+            $patcher->addChange(Helpers::inthex(Health::CrabReb),dechex($healthOffset+Entity::CrabReb));
+            $patcher->addChange(Helpers::inthex(Health::Carpet),dechex($healthOffset+Entity::Carpet));
+            $patcher->addChange(Helpers::inthex(Health::BouncerGreen),dechex($healthOffset+Entity::BouncerGreen));
+            $patcher->addChange(Helpers::inthex(Health::BouncerBlue),dechex($healthOffset+Entity::BouncerBlue));
+            $patcher->addChange(Helpers::inthex(Health::BouncerRed),dechex($healthOffset+Entity::BouncerRed));
+            $patcher->addChange(Helpers::inthex(Health::CrystalStar),dechex($healthOffset+Entity::CrystalStar));
+            $patcher->addChange(Helpers::inthex(Health::Skull),dechex($healthOffset+Entity::Skull));
 
-            $patcher->addChange(Helpers::inthex(Health::defLarge),dechex($healthOffset+Boss::defLarge));
-            $patcher->addChange(Helpers::inthex(Health::defSmall),dechex($healthOffset+Boss::defSmall));
-            $patcher->addChange(Helpers::inthex(Health::groundEyeBig),dechex($healthOffset+Boss::groundEyeBig));
-            $patcher->addChange(Helpers::inthex(Health::groundEyeSmall),dechex($healthOffset+Boss::groundEyeSmall));
+            $patcher->addChange(Helpers::inthex(Health::groundEyeBig),dechex($healthOffset+Entity::groundEyeBig));
+            $patcher->addChange(Helpers::inthex(Health::groundEyeSmall),dechex($healthOffset+Entity::groundEyeSmall));
 
         }
 
+        //set the health of the a0 boss, we don't shuffle this area so no randomization
+        $patcher->addChange(Helpers::inthex(Health::defLarge),dechex($healthOffset+Entity::defLarge));
+        $patcher->addChange(Helpers::inthex(Health::defSmall),dechex($healthOffset+Entity::defSmall));
+
+        //fix the health of red and blue skull enemies
+        $patcher->addChange(Helpers::inthex(Health::redSkullEnemy),dechex($healthOffset+Entity::redSkullEnemy));
+        $patcher->addChange(Helpers::inthex(Health::blueSkullEnemy),dechex($healthOffset+Entity::blueSkullEnemy));
 
     }
 

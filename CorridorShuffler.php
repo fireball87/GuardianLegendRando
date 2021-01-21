@@ -36,12 +36,16 @@ class CorridorShuffler
         $bosses = "";
         $pointers = "";
         $graphics = "";
+        echo "\n";
         foreach($table as $row)
         {
+            echo $row[0].",";
             $bosses.=$row[1];
             $pointers.=$row[2];
             $graphics.=$row[3];
         }
+        echo "\n";
+
 
 
         $patcher->addChange($bosses,"d162");
