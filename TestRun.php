@@ -74,16 +74,19 @@ if($log) {
 }
 $hex = $map->writeHex($log);
 
-if($secret)
-{
-    $rawdata = file_get_contents("./sourceroms/secret4rando.nes");
-}
-else
-{
-    $rawdata = file_get_contents("./sourceroms/tgl.nes");
-}
-$rom = bin2hex($rawdata);
 
+if($writefiles)
+{
+	if($secret)
+	{
+    		$rawdata = file_get_contents("./sourceroms/secret4rando.nes");
+	}
+	else
+	{
+    		$rawdata = file_get_contents("./sourceroms/tgl.nes");
+	}
+	$rom = bin2hex($rawdata);
+}
 //patch the consecutive fire default value
 if($fasterStartingFire)
     $patcher->addChange("07","087DE");
