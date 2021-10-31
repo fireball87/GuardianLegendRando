@@ -37,7 +37,7 @@ class ItemGenerator
 //place and fill shops
 //throw the rest of the items into place
 
-    public static function prepareItems(Patcher $patcher, int $multi_shops, int $single_shops , int $weapon_size,int $blue,int $red,int $shield,int $guns,int $rapid_fires,int $etanks,int $enemyerasers)
+    public static function prepareItems(Patcher $patcher, int $multi_shops, int $single_shops , int $weapon_size,int $blue,int $red,int $shield,int $guns,int $rapid_fires,int $etanks,int $enemyerasers, bool $log)
     {
         $single_shop_library = array_fill(0, 11, []);
         $multi_shop_library = array_fill(0, 11, []);
@@ -47,10 +47,12 @@ class ItemGenerator
 
         //corridors use items from 0-19
         $patchstring = "";
-        echo "\n";
+        if($log)
+            echo "\n";
         for($i=0;$i<=19;$i++)
         {
-            echo "corridor ".$i." has ". $itemPool[$i]."\n";
+            if($log)
+                echo "corridor ".$i." has ". $itemPool[$i]."\n";
             $patchstring.=Helpers::inthex($itemPool[$i]);
         }
         $patcher->addChange($patchstring,"1EF51");
@@ -66,13 +68,15 @@ class ItemGenerator
 
             if($i>=30&&$i<52)
             {
-                echo "miniboss ". dechex($i-19) ." has ". $itemPool[$i]."\n";
+                if($log)
+                    echo "miniboss ". dechex($i-19) ." has ". $itemPool[$i]."\n";
 
             }
             else
             {
                 array_push($item_library[rand(0,10)],Helpers::inthex($i-19));
-                echo "item box ". dechex($i-19) ." has ". $itemPool[$i]."\n";
+                if($log)
+                    echo "item box ". dechex($i-19) ." has ". $itemPool[$i]."\n";
                 if($i-19>57)
                 {
                     throw new Exception("Tried to place more item boxes then the game had");
@@ -97,8 +101,8 @@ class ItemGenerator
 
             $patchstring.=$flippedPrice.Helpers::inthex($itemPool[$i]);
             array_push($single_shop_library[0],Helpers::inthex($id));
-
-            echo "small shop ". dechex($id) ." has ". $itemPool[$i]."\n";
+            if($log)
+                echo "small shop ". dechex($id) ." has ". $itemPool[$i]."\n";
         }
         $patcher->addChange($patchstring,"16077");//1601
 
@@ -123,7 +127,8 @@ class ItemGenerator
             $patchstring.=$flippedPrice.Helpers::inthex($itemPool[$i]).Helpers::inthex($randItem0).Helpers::inthex(rand(0,10));
             array_push($multi_shop_library[$desiredArea],Helpers::inthex($id));
 
-            echo "big shop ". dechex($id) ." has ". $itemPool[$i]. " in area ".$desiredArea."\n";
+            if($log)
+                echo "big shop ". dechex($id) ." has ". $itemPool[$i]. " in area ".$desiredArea."\n";
         }
 
 

@@ -17,4 +17,20 @@ class Helpers
     }
 
 
+    public static function padHex(string $hex, int $digits): string
+    {
+        while(true)
+        {
+            if(strlen($hex) >= $digits)
+            {
+                break;
+            }
+            else
+            {
+                $hex = "0".$hex;
+            }
+        }
+        return $hex;
+    }
+
 }

@@ -24,7 +24,7 @@ class Generator
 
 
 
-    public function run(array $itemLibrary, array $smallShopLibrary, array $multiShopLibrary, bool $secret,int $min_area_size,int $max_area_size, int $desiredConnections, int $desiredOneWayConnections, bool $portalOnlyOneWays,  int $decoration_odds, int $chip_odds, int $empty_room_odds)
+    public function run(array $itemLibrary, array $smallShopLibrary, array $multiShopLibrary, bool $secret,int $min_area_size,int $max_area_size, int $desiredConnections, int $desiredOneWayConnections, bool $portalOnlyOneWays,  int $decoration_odds, int $chip_odds, int $empty_room_odds, bool $log)
     {
         //create the map
 
@@ -74,6 +74,7 @@ class Generator
 
         $this->populateEnemies($map,$empty_room_odds);
         $bytes = $this->countAllRoomBytes($map);
+        if($log)
         echo $bytes . "\n";
         if($bytes > 1916)
         {

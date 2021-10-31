@@ -145,7 +145,7 @@ class Map
     }
 
 
-    public function writeHex()
+    public function writeHex(bool $log)
     {
         $finalhex = "";
         foreach ($this->data as $yPos => $row) {
@@ -209,7 +209,8 @@ class Map
             }
 
         }
-        echo strtoupper($finalhex);
+        if ($log)
+            echo strtoupper($finalhex);
         return $finalhex;
     }
 

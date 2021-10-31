@@ -7,44 +7,47 @@ namespace TGL\MapGen;
 
 class CorridorShuffler
 {
-    public static function shuffleCorridors(Patcher $patcher)
+    public static function shuffleCorridors(Patcher $patcher, bool $log)
     {
         $table = [ //corridor (and therefore id), bossid, corridor pointer
-            [1,"40","509C","21"],
-            [2,"45","7F9D","21"],
-            [3,"2E","5EA2","22"],
-            [4,"46","0CA4","22"],
-            [5,"23","8EA9","23"],
-            [6,"47","11AB","23"],
-            [7,"06","11B0","24"],
-            [8,"49","96B1","24"],
-            [9,"18","BFB6","26"],
-            [10,"19","C1B8","26"],
-            [11,"2D","2B9F","21"],
-            [12,"41","8EA0","21"],
-            [13,"4C","F7A5","22"],
-            [14,"25","B1A7","22"],
-            [15,"24","90AC","23"],
-            [16,"2F","29AE","23"],
-            [17,"06","46B3","24"],
-            [18,"48","E0B4","24"],
-            [19,"4D","FFBA","25"],
-            [20,"26","32BD","25"]
+            [1, "40", "509C", "21"],
+            [2, "45", "7F9D", "21"],
+            [3, "2E", "5EA2", "22"],
+            [4, "46", "0CA4", "22"],
+            [5, "23", "8EA9", "23"],
+            [6, "47", "11AB", "23"],
+            [7, "06", "11B0", "24"],
+            [8, "49", "96B1", "24"],
+            [9, "18", "BFB6", "26"],
+            [10, "19", "C1B8", "26"],
+            [11, "2D", "2B9F", "21"],
+            [12, "41", "8EA0", "21"],
+            [13, "4C", "F7A5", "22"],
+            [14, "25", "B1A7", "22"],
+            [15, "24", "90AC", "23"],
+            [16, "2F", "29AE", "23"],
+            [17, "06", "46B3", "24"],
+            [18, "48", "E0B4", "24"],
+            [19, "4D", "FFBA", "25"],
+            [20, "26", "32BD", "25"]
         ];
 
-        shuffle ($table);
+        shuffle($table);
         $bosses = "";
         $pointers = "";
         $graphics = "";
-        echo "\n";
+        if ($log)
+            echo "\n";
         foreach($table as $row)
         {
-            echo $row[0].",";
+            if ($log)
+                echo $row[0].",";
             $bosses.=$row[1];
             $pointers.=$row[2];
             $graphics.=$row[3];
         }
-        echo "\n";
+        if ($log)
+            echo "\n";
 
 
 

@@ -15,8 +15,10 @@ require_once("./Items/ItemGenerator.php");
 
 
 
-echo "start\n";
+$log = false;
 $generator = new Generator();
+
+$writefiles = false;
 
 $secret = false;
 $fasterStartingFire = true;
@@ -27,10 +29,13 @@ $patchBalance = true; //can not be on if secret is on, must be on if corridor or
 $shuffleCorridors = true;
 $randomizeMinibosses = true;
 
+if($log)
+    echo "start\n";
+
 
 if($generateItems)
 {
-    $itemLibraries = ItemGenerator::prepareItems($patcher,5,5,4,9,10,9,5,5,0,5);
+    $itemLibraries = ItemGenerator::prepareItems($patcher,5,5,4,9,10,9,5,5,0,5,$log);
 }
 else if(secret)
 {
@@ -48,7 +53,7 @@ if($patchBalance && !$secret)
     EnemyBalancer::rebalanceAll($patcher, true, true);
     if($shuffleCorridors)
     {
-        CorridorShuffler::shuffleCorridors($patcher);
+        CorridorShuffler::shuffleCorridors($patcher, $log);
     }
 
     if($randomizeMinibosses)
@@ -60,12 +65,14 @@ if($patchBalance && !$secret)
 
 
 
-$map = $generator->run($itemLibraries[0],$itemLibraries[1],$itemLibraries[2],$secret,18,25, 3,0, false,6, 3,10);
+$map = $generator->run($itemLibraries[0],$itemLibraries[1],$itemLibraries[2],$secret,18,25, 3,0, false,6, 3,10, $log);
 
-$map->printAreas();
-$map->drawExits();
-echo "done\n";
-$hex = $map->writeHex();
+if($log) {
+    $map->printAreas();
+    $map->drawExits();
+    echo "done\n";
+}
+$hex = $map->writeHex($log);
 
 if($secret)
 {
@@ -84,21 +91,37 @@ if($fasterStartingFire)
 
 
 
-
-$patcher->addChange($hex,"14A7E");
-
-$filetag = "tgl";
-if($secret)
+#add the map change
 {
-    $filetag = "secret";
+    $patcher->addChange($hex, "14A7E");
+}
+if($writefiles) {
+
+    $filetag = "tgl";
+    if($secret)
+    {
+        $filetag = "secret";
+    }
+
+    $patcher->writeRom("./output/" . $filetag . date("Y-m-d-H-i-s") . ".nes", $rom);
+
+
+    $byte_array =$patcher->writeIPS();
+    $file = fopen("./output/" . $filetag . date("Y-m-d-H-i-s") . ".ips", "w") or die("Unable to open file!");
+    fwrite($file, $byte_array);
+    fclose($file);
+
+
+    $csvfile = fopen("./output/" . $filetag . date("Y-m-d-H-i-s") . ".csv", "w") or die("Unable to open file!");
+    fwrite($csvfile, SplitMap::split($hex));
+    fclose($csvfile);
+}
+else
+{
+    $byte_array =$patcher->writeIPS();
+    echo base64_encode($byte_array);
 }
 
-$patcher->writeRom("./output/".$filetag.date("Y-m-d-H-i-s").".nes",$rom);
-
-
-
-$csvfile = fopen("./output/".$filetag.date("Y-m-d-H-i-s").".csv", "w") or die("Unable to open file!");
-fwrite($csvfile, SplitMap::split($hex));
-fclose($csvfile);
-
-EnemyBalancer::printStatistics();
+if($log) {
+    EnemyBalancer::printStatistics();
+}
