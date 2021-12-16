@@ -18,15 +18,16 @@ require_once("./Items/ItemGenerator.php");
 $log = false;
 $generator = new Generator();
 
-$writefiles = false;
+$writefiles = true;
 
 $secret = false;
 $fasterStartingFire = true;
 $generateItems=true;
 $patcher = new Patcher();
 
-$patchBalance = true; //can not be on if secret is on, must be on if corridor or boss shuffling is on, not required for miniboss shuffling, but certainly reccomended
+$patchBalance = true; //can not be on if secret is on, must be on if corridor miniboss or boss shuffling is on
 $shuffleCorridors = true;
+$shuffleCorridorInternals = true;
 $randomizeMinibosses = true;
 
 if($log)
@@ -95,6 +96,15 @@ if($fasterStartingFire)
 {
     $patcher->addChange($hex, "14A7E");
 }
+
+#shuffle corridor internals
+if($shuffleCorridorInternals)
+{
+    CorridorShuffler::shuffleCorridorInternals($patcher,$log);
+
+}
+
+
 if($writefiles) {
 
     $filetag = "tgl";
@@ -125,3 +135,4 @@ else
 if($log) {
     EnemyBalancer::printStatistics();
 }
+
