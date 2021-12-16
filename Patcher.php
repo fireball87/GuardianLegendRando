@@ -5,8 +5,8 @@ namespace TGL\MapGen;
 
 class Change
 {
-    public string $hex;
-    public string $offset;
+    public $hex;
+    public $offset;
     function __construct(string $hex, string $offset)
     {
         $this->hex = $hex;
@@ -15,7 +15,7 @@ class Change
 }
 class Patcher
 {
-    private array $changes = [];
+    private $changes = [];
 
     /*public function addChange(Change $change)
     {
