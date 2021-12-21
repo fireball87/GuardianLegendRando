@@ -270,13 +270,13 @@ class EnemyBalancer
             $patcher->addChange(Helpers::inthex(rand(12,24)),dechex($healthOffset+Entity::FleepaRed));
             $patcher->addChange(Helpers::inthex(rand(12,24)),dechex($healthOffset+Entity::Crawdaddy));
             $patcher->addChange(Helpers::inthex(rand(12,24)),dechex($healthOffset+Entity::Terramute));
-            $patcher->addChange(Helpers::inthex(rand(4,12)),dechex($healthOffset+Entity::Glider));
-            $patcher->addChange(Helpers::inthex(rand(12,24)),dechex($healthOffset+Entity::GrimgrinBlue));
-            $patcher->addChange(Helpers::inthex(rand(12,24)),dechex($healthOffset+Entity::GrimgrinRed));
-            $patcher->addChange(Helpers::inthex(rand(8,16)),dechex($healthOffset+Entity::BombarderBlue));
-            $patcher->addChange(Helpers::inthex(rand(8,16)),dechex($healthOffset+Entity::BombarderRed));
+            $patcher->addChange(Helpers::inthex(rand(4,8)),dechex($healthOffset+Entity::Glider));
+            $patcher->addChange(Helpers::inthex(rand(18,30)),dechex($healthOffset+Entity::GrimgrinBlue));
+            $patcher->addChange(Helpers::inthex(rand(20,32)),dechex($healthOffset+Entity::GrimgrinRed));
+            $patcher->addChange(Helpers::inthex(rand(8,12)),dechex($healthOffset+Entity::BombarderBlue));
+            $patcher->addChange(Helpers::inthex(rand(8,12)),dechex($healthOffset+Entity::BombarderRed));
 
-            $patcher->addChange(Helpers::inthex(rand(28,36)),dechex($healthOffset+Entity::It));
+            $patcher->addChange(Helpers::inthex(rand(30,40)),dechex($healthOffset+Entity::It));
             $patcher->addChange(Helpers::inthex(rand(4,12)),dechex($healthOffset+Entity::SpiderGreen));
             $patcher->addChange(Helpers::inthex(rand(4,12)),dechex($healthOffset+Entity::SpiderBlue));
             $patcher->addChange(Helpers::inthex(rand(4,12)),dechex($healthOffset+Entity::SpiderRed));

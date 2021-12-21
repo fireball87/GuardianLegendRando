@@ -15,7 +15,7 @@ require_once("./Items/ItemGenerator.php");
 
 
 
-$log = false;
+$log = true;
 $generator = new Generator();
 
 $writefiles = true;
@@ -30,13 +30,14 @@ $shuffleCorridors = true;
 $shuffleCorridorInternals = true;
 $randomizeMinibosses = true;
 
+$forceShields = true; //requires generateItems
 if($log)
     echo "start\n";
 
 
 if($generateItems)
 {
-    $itemLibraries = ItemGenerator::prepareItems($patcher,5,5,4,9,10,9,5,5,0,5,$log);
+    $itemLibraries = ItemGenerator::prepareItems($patcher,5,5,4,9,10,6, $forceShields,5,5,3,5,$log);
 }
 else if(secret)
 {
@@ -45,6 +46,13 @@ else if(secret)
 else
 {
     $itemLibraries = [ItemLibrary::getItemLibrary(),Itemlibrary::getSingleShopLibrary(),ItemLibrary::getMultiShopLibrary()];
+}
+
+
+#shuffle corridor internals
+if($shuffleCorridorInternals)
+{
+    CorridorShuffler::shuffleCorridorInternals($patcher,$log);//this call MUST come before boss shuffling
 }
 
 
@@ -100,12 +108,6 @@ if($fasterStartingFire)
     $patcher->addChange($hex, "14A7E");
 }
 
-#shuffle corridor internals
-if($shuffleCorridorInternals)
-{
-    CorridorShuffler::shuffleCorridorInternals($patcher,$log);
-
-}
 
 
 if($writefiles) {

@@ -37,13 +37,59 @@ class ItemGenerator
 //place and fill shops
 //throw the rest of the items into place
 
-    public static function prepareItems(Patcher $patcher, int $multi_shops, int $single_shops , int $weapon_size,int $blue,int $red,int $shield,int $guns,int $rapid_fires,int $etanks,int $enemyerasers, bool $log)
+    public static function prepareItems(Patcher $patcher, int $multi_shops, int $single_shops , int $weapon_size,int $blue,int $red,int $shield, bool $force_shields,int $guns,int $rapid_fires,int $etanks,int $enemyerasers, bool $log)
     {
         $single_shop_library = array_fill(0, 11, []);
         $multi_shop_library = array_fill(0, 11, []);
         $item_library = array_fill(0, 11, []);
 
-        $itemPool = self::createItemPool($weapon_size,$blue,$red,$shield,$guns,$rapid_fires, $etanks, $enemyerasers);
+        $itemPool = self::createItemPool($weapon_size,$blue,$red,$shield, $force_shields,$guns,$rapid_fires, $etanks, $enemyerasers);
+
+
+        $poolSize = count($itemPool);
+        for($i=20;$i<=$poolSize-($single_shops+$multi_shops+1);$i++)
+        {
+            if(!($i>=30&&$i<52))
+            {
+                $area = rand(0,10);
+                array_push($item_library[$area],Helpers::inthex($i-19));
+                echo "item box ". dechex($i-19) ." is in area ". $area."\n";
+
+            }
+        }
+
+
+        if($force_shields)
+        {
+            for($x = 1; $x <= 5; $x++)
+            {
+                $possibilities = array();
+                $possibilities[] = $x*2-2;
+                $possibilities[] = $x*2-1;
+                $possibilities[] = 10+$x*2-2;
+                $possibilities[] = 10+$x*2-1;
+
+                $possibilities[] = 31+$x*4-3;
+                $possibilities[] = 31+$x*4-2;
+                $possibilities[] = 31+$x*4-1;
+                $possibilities[] = 31+$x*4;
+
+                foreach ($item_library[$x*2-1] as $item)
+                {
+                    $possibilities[] = hexdec($item)+19;
+                }
+                foreach ($item_library[$x*2] as $item)
+                {
+                    $possibilities[] = hexdec($item)+19;
+                }
+
+                $indexToSwap = $possibilities[rand(0,count($possibilities)-1)];
+                $temp = $itemPool[$poolSize-$x];
+                $itemPool[$poolSize-$x] = $itemPool[$indexToSwap];
+                $itemPool[$indexToSwap] = $temp;
+
+            }
+        }
 
         //corridors use items from 0-19
         $patchstring = "";
@@ -52,7 +98,7 @@ class ItemGenerator
         for($i=0;$i<=19;$i++)
         {
             if($log)
-                echo "corridor ".$i." has ". $itemPool[$i]."\n";
+                echo "corridor ".($i+1)." has ". $itemPool[$i]."\n";
             $patchstring.=Helpers::inthex($itemPool[$i]);
         }
         $patcher->addChange($patchstring,"1EF51");
@@ -60,7 +106,6 @@ class ItemGenerator
         //minibosses use items from 20-39
         $patchstring = "";
         $itemstring = "";
-        $poolSize = count($itemPool);
 
         for($i=20;$i<=$poolSize-($single_shops+$multi_shops+1);$i++)
         {
@@ -74,7 +119,6 @@ class ItemGenerator
             }
             else
             {
-                array_push($item_library[rand(0,10)],Helpers::inthex($i-19));
                 if($log)
                     echo "item box ". dechex($i-19) ." has ". $itemPool[$i]."\n";
                 if($i-19>57)
@@ -175,7 +219,7 @@ class ItemGenerator
 
 
 
-    private static function createItemPool($weapon_size,$blue,$red,$shield,$guns,$rapid_fires, $etanks, $enemyerasers)
+    private static function createItemPool($weapon_size,$blue,$red,$shield, $force_shields,$guns,$rapid_fires, $etanks, $enemyerasers)
     {
         $pool = [];
         while($weapon_size > 0)
@@ -195,6 +239,8 @@ class ItemGenerator
             $red --;
         }
 
+        if($force_shields)
+            $shield -=5;
         while($shield > 0)
         {
             array_push($pool,Item::Shield);
@@ -229,6 +275,16 @@ class ItemGenerator
         if (count($pool)>57+30+10)
             throw new Exception("Too many items to place.");
          shuffle($pool);
+
+         if($force_shields)
+         {
+             $x = 5;
+             while($x > 0)
+             {
+                 array_push($pool,Item::Shield);
+                 $x --;
+             }
+         }
          return $pool;
 
     }
