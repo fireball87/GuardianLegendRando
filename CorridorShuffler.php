@@ -7,9 +7,106 @@ namespace TGL\MapGen;
 
 class CorridorShuffler
 {
-    public static function shuffleCorridors(Patcher $patcher, bool $log)
+
+
+    public static function randomizeBosses(Patcher $patcher, $randomizeFinalBoss) : array
     {
         $table = [ //corridor (and therefore id), bossid, corridor pointer
+            ["boss"=>"eyegore","patch"=>["003780013A800242DA834FF6","00378001028E0242DA834FF6"],"pointer"=>["C2BF","C2CB"],"ids"=>["18","19"]],
+            ["boss"=>"fleepa","patch"=>["0037800139888243B2"],"pointer"=>["B8B8"],"ids"=>["40","41"]],
+            ["boss"=>"optomon","patch"=>["0037800140C68253F6"],"pointer"=>["5DA0"],"ids"=>["2d","2e","2f"]],
+            ["boss"=>"crawdaddy","patch"=>["0037808149BA"],"pointer"=>["FD9E"],"ids"=>["45"]],
+            ["boss"=>"bombarderclawbot","patch"=>["003780013588022AD88351F6"],"pointer"=>["F2BC"], "ids"=>["4c","4d","24","25","26"]],
+            ["boss"=>"teramute","patch"=>["0037800144B08203F2"],"pointer"=>["DBA3"],"ids"=>["46"]],
+            ["boss"=>"glider","patch"=>["0037800134C68235E6"],"pointer"=>["20AE"],"ids"=>["47"]],
+            ["boss"=>"zibzub","patch"=>["0037800135888241D2"],"pointer"=>["7CA7"],"ids"=>["23"]],
+            ["boss"=>"grimgrin","patch"=>["00378001049A821CA2"],"pointer"=>["8AB6"],"ids"=>["48","49"]],
+        ];
+
+        if($randomizeFinalBoss)
+        {
+            $table[] = ["boss"=>"it","patch"=>["00378001368802459C8318D0"],"pointer"=>["0585"],"ids"=>["4f"]];
+        }
+
+        foreach($table as $boss)
+        {
+            foreach($boss["patch"] as $key => $patch) {
+                $bankstart = hexdec("8010");
+                $flipped_pointer = substr($boss["pointer"][$key], 2, 2) . substr($boss["pointer"][$key], 0, 2);
+                $offset = dechex($bankstart + hexdec($flipped_pointer));
+                $patcher->addChange($patch, $offset);
+            }
+        }
+
+        $finalBoss = null;
+        //pick the final boss
+        if($randomizeFinalBoss)
+        {
+            $boss_array_id = array_rand($table);
+            $id_array_id = array_rand($table[$boss_array_id]["ids"]);
+            $id = $table[$boss_array_id]["ids"][$id_array_id];
+            if(count($table[$boss_array_id]["pointer"]) > 1) {
+                $pointer = $table[$boss_array_id]["pointer"][$id_array_id];
+                unset($table[$boss_array_id]["pointer"][$id_array_id]);
+            }
+            else {
+                $pointer = $table[$boss_array_id]["pointer"][0];
+            }
+            unset($table[$boss_array_id]["ids"][$id_array_id]);
+
+
+            if(count($table[$boss_array_id]["ids"])==0)
+            {
+                unset($table[$boss_array_id]);
+            }
+            $finalBoss = array("id"=>$id,"pointer"=>$pointer);
+        }
+
+
+
+        //make the c21 boss list
+        //need to pick 6 bosses
+        shuffle($table);
+        $c21bosses = array();
+        for($x=0;$x<6;$x++)
+        {
+            $key = array_rand($table[$x]["ids"]);
+            if(count($table[$x]["pointer"]) > 1)
+                $pointer = $table[$x]["pointer"][$key];
+            else
+                $pointer = $table[$x]["pointer"][0];
+            $id = $table[$x]["ids"][$key];
+            $c21bosses[]=array("id"=>$id,"pointer"=>$pointer);
+        }
+
+        //now need to make the array for every enemy
+        $levelBosses = array();
+        foreach($table as $boss)
+        {
+            foreach($boss["ids"] as $key => $id)
+            {
+                if(count($boss["pointer"]) > 1)
+                    $levelBosses[]=array("id"=>$id,"pointer"=>$boss["pointer"][$key]);
+                else
+                    $levelBosses[]=array("id"=>$id,"pointer"=>$boss["pointer"][0]);
+            }
+        }
+        shuffle($levelBosses);
+        $levelBosses = array_merge(array_slice($levelBosses, 0, 6),
+            array(null),
+            array_slice($levelBosses, 6, count($levelBosses) - 1));
+        $levelBosses = array_merge(array_slice($levelBosses, 0, 16),
+            array(null),
+            array_slice($levelBosses, 16, count($levelBosses) - 1));
+
+
+
+        return array("level"=>$levelBosses,"c21"=>$c21bosses,"final"=>$finalBoss);
+    }
+
+    public static function shuffleCorridors(Patcher $patcher, bool $shuffleCorridors, ?array $shuffledBosses, bool $log)
+    {
+        $table = [ //corridor (and therefore id), bossid, corridor pointer, graphicstable
             [1, "40", "509C", "21"],
             [2, "45", "7F9D", "21"],
             [3, "2E", "5EA2", "22"],
@@ -32,7 +129,21 @@ class CorridorShuffler
             [20, "26", "32BD", "25"]
         ];
 
-        shuffle($table);
+        //refresh the list with the shuffled bosses
+        if(!is_null($shuffledBosses))
+        {
+            for($x = 0;$x<20;$x++)
+            {
+                $entry = $shuffledBosses["level"][$x];
+                if(!is_null($entry))
+                    $table[$x][1]=$entry["id"];
+            }
+
+
+        }
+
+        if($shuffleCorridors)
+            shuffle($table);
         $bosses = "";
         $pointers = "";
         $graphics = "";
@@ -45,6 +156,11 @@ class CorridorShuffler
             $bosses.=$row[1];
             $pointers.=$row[2];
             $graphics.=$row[3];
+        }
+
+        if(!is_null($shuffledBosses))
+        {
+            $bosses.=$shuffledBosses["c21"][array_key_last($shuffledBosses["c21"])]["id"].$shuffledBosses["final"]["id"];
         }
         if ($log)
             echo "\n";
@@ -111,10 +227,12 @@ class CorridorShuffler
     }
 
 
-    public static function tokenizeCorridor($input,$corridor_number) : Array
+    public static function tokenizeCorridor($input,$corridor_number, ?array $bosses) : Array
     {
+        $bossesplaced = 0;
+
         $last_c6 = null;
-        $inputClone = $input;
+        $last_c7 = null;
         $returnArray = array();
         while(strlen($input) > 0) {
             //take 4 digits as time
@@ -200,12 +318,53 @@ class CorridorShuffler
 
             }
 
+
+            if($command == "07")
+            {
+                $last_c7 = &$entry;
+            }
+            if($command == "05")
+            {
+                if(!is_null($bosses))
+                {
+                    if($corridor_number==21)
+                    {
+                       $last_c7["data"]=$bosses["c21"][$bossesplaced]["pointer"];
+                       $entry["data"] = $bosses["c21"][$bossesplaced]["id"];
+                    }
+                    else if($corridor_number==22)
+                    {
+                        $last_c7["data"]=$bosses["final"]["pointer"];
+                    }
+                    else if($corridor_number > 0 && $corridor_number < 21)
+                    {
+                        $level_data = $bosses["level"][$corridor_number-1];
+                        if(!is_null($level_data)) {
+                            $last_c7["data"] = $level_data["pointer"];
+                        }
+
+
+                    }
+                    $bossesplaced++;
+
+                }
+
+            }
+            $bossHit = false;
             if($command == "06"||$command =="05"||$command =="01")
             {
-                if(!is_null($last_c6)&&!array_key_exists("time_to_next_important_command",$last_c6)) {
-                    $last_c6["time_to_next_important_command"] = hexdec($time) - hexdec($last_c6["time"]);
+                if($bossHit == true)
+                {
+                    if($command=="06")
+                        $entry["static"]=true;
+                }
+                else if(!is_null($last_c6)&&!array_key_exists("time_to_next_important_command",$last_c6)) {
+                    if($command == "06")
+                        $last_c6["time_to_next_important_command"] = hexdec($time) - hexdec($last_c6["time"]);
                     if($command =="05"||$command =="01")
                     {
+                        if($command =="05")
+                            $bossHit=true;
                         $last_c6["static"]=true;
                         unset($last_c6);
                         $last_c6 = null;
@@ -230,12 +389,6 @@ class CorridorShuffler
 
         }
 
-        $testArray = CorridorShuffler::writeToHex($returnArray);
-        if(!$testArray==$inputClone)
-        {
-            $error = 'Writing the hex produced a different result from what we read from...';
-            throw new Exception($error);
-        }
 
         return $returnArray;
 
@@ -319,14 +472,14 @@ class CorridorShuffler
 
     }
 
-    public static function shuffleCorridorInternals(Patcher $patcher, bool $log)
+    public static function shuffleCorridorInternals(Patcher $patcher,bool $shuffleInternals, ?array $bosses, bool $log)
     {
 
         //c0
         $c0 = array("id"=>0, "address"=>"10055", "data"=>"000000008700000161830000045983000007C5BC00000202B48100000604400503140161824108083100618242010542066182030880FE080D9E841400000010900106044482060604D38345CE061104A08346640097FCA184476400970CA1844C020164832A030607E0FCA083E10CA083E304A1844202000000DB844414260C04C78445163A0904C7844613260C04C7845C03000001BA0406024400180605D184458C180609D184D20506036026FCA08361260CA083C21500DB8404060605C05C04A18441001208FCA083420C12080CA083435A080706D184445A0E0508D184C2060607400001220005844100012204058442000122080584430001220C0584040C0D0404001984052809FC040C198406440D04040019844E070605C01704A184C108FCA083C2080CA08343160504049D83441605040B9D83580700800085070606E0002784610603978342040003059783430500030797834404000309978365060B97838607059107000000");
 
         //c1
-        $c1 = array("id"=>1,"address"=>"11c6a", "data"=>"0000000001000007439D000002025A9D0000060341000605006696420606050466966346095E975500060241051103072C9642000F0307AD8891000603E100E3966212009F964004000700C196C3000606410014030C25976246FD2597030A140902021B966450041B966550081B9666500C1B9627010601E100338845010602E105859842000408096696BD010602E10A85984200010AF8669635020603E10785986250031B9663500A1B968F02060243000404FED188440004040CD188BC02008000BC0207559DC10205D5020604610A00E396621C009F96400E000700C196E3095E97F30203259D");
+        $c1 = array("id"=>1,"address"=>"11c60", "data"=>"000004139600000191850000000001000007439D000002025A9D0000060341000605006696420606050466966346095E975500060241051103072C9642000F0307AD8891000603E100E3966212009F964004000700C196C3000606410014030C25976246FD2597030A140902021B966450041B966550081B9666500C1B9627010601E100338845010602E105859842000408096696BD010602E10A85984200010AF8669635020603E10785986250031B9663500A1B968F02060243000404FED188440004040CD188BC02008000BC0207559DC10205D5020604610A00E396621C009F96400E000700C196E3095E97F30203259D");
 
         //c11
         $c11 = array("id"=>11,"address"=>"11f3b", "data"=>"00000413960000018E85000000800100000748A00000020267A006000604C102FCAE97C2020CAE97631005AE9740000B0206EB971E00060541001805F8EB9742051805FAEB97430A1805F7EB97441432030AAE97455A0A03032C96B40006040400020202022C9605140202020A2C96062802FE02062C9607320302020A2C9604010603420C2205077997431222050979974132140600049868010603401E0D05FB0498450C0203037D98460C0203077D98CC01060441000C0A00EB970328050203011B96042805FE030D1B9645460503071B963002060542000114076096430A010F056096440A010F0960964514010A0360964614010A0B609644020080004402075DA04E02056C0206020200030300F479976346FEAE97C6020332A0");
@@ -390,7 +543,7 @@ class CorridorShuffler
         $c21 = array("id"=>21,"address"=>"13e6a", "data"=>"00000000020000048385000001918500000602C1030C7087C204FECD87000007C2BF00000202E6BF27000603630DF42F8764000C2F87450A010308AD883A0005403C000603E1F9E9864204000203CD87631EF92F876400099BBE640007CBBF82000603E107E98642040003077087632B072F8796000523B4000604E107E98662040770876311072F8744000203FFD188D20009D1BED20007D1BFDC000525E600060241000A040033886232003388400109F8BE400107D7BF4001052F5E010603E0F5E98641040002FFCD87621EF52F877C01060364000AE98665040A708766110A2F879A010916BF9A0107DDBF9A010548A401060641001A02F5E98642041102FFCD8743111A02F52F8744001A020AE986450411020A708746111A020A2F87E001094BBFE00107E3BFE001054DEA010604E0F6E986E10AE9864204000000CD87430400000A708715020602C20300CD87C3030A7087220209A1BF2F020602640DF62F87650D0A2F87");
 
         //it
-        $it = array("address"=>"10521", "data"=>"00000000810000016183000004FD8400000202748500000705850000060840000800049B8441040F00089B8442062B000B9E8443010A00079B84440C0C000D9B84451E2100029E84460911000A9B8447060B00059B846400057800008000E803036A85");
+        $it = array("id"=>22,"address"=>"10521", "data"=>"00000000810000016183000004FD8400000202748500000705850000060840000800049B8441040F00089B8442062B000B9E8443010A00079B84440C0C000D9B84451E2100029E84460911000A9B8447060B00059B846400057800008000E803036A85");
 
         //escape
         $escape = array("id"=>30,"address"=>"1027d", "data"=>"00000000840000016483000004598300000200000006044000030600D3834200030608D38344000206FDA083450002060BA0830000000010300006064200012000D3834300012008D38344000020FBA083450000200DA08346120002FEA083472400010AA0837E00060246120001FEA083470000030AA083C600060246000602FEA083470006020AA083ED00016183FA0006050414140702049E84000004FF08079B840100040108089B84020A07FF08079B84030A070108089B842C0106050000190703009E8404000AFF08079B8405000A0108089B84060A0DFF08079B84070A0D0108089B847C0103FC82");
@@ -398,14 +551,21 @@ class CorridorShuffler
         //transform
         $transform = array("id"=>31,"address"=>"101fd", "data"=>"00000000860000016483000004598300000200000006064000001B04A18441020009FCA083420200090CA0834510240007B3844614100006B3844718240005B384380006034001000504A18441010002FCA083420100020CA083450006034000000204A1846300FDA08364000BA0834B00032E82");
 
-        $inputData = array($c0,$c1,$c2,$c3,$c4,$c5,$c6,$c7,$c8,$c9,$c10,$c11,$c12,$c13,$c14,$c15,$c16,$c17,$c18,$c19,$c20,$transform,$escape);
-        //$inputData = array($c21);
+        $inputData = array($c0,$c1,$c2,$c3,$c4,$c5,$c6,$c7,$c8,$c9,$c10,$c11,$c12,$c13,$c14,$c15,$c16,$c17,$c18,$c19,$c20,$c21,$transform,$escape,$it);
+        //$inputData = array($c1);
 
         foreach($inputData as $corridor)
         {
-            $tokenized = CorridorShuffler::tokenizeCorridor($corridor["data"], $corridor["id"]);
-            $shuffledTokens = CorridorShuffler::shuffleIndividualCorridorInternals($tokenized);
-            $outputHex = CorridorShuffler::writeToHex($shuffledTokens);
+            $tokenized = CorridorShuffler::tokenizeCorridor($corridor["data"], $corridor["id"],$bosses);
+            if($shuffleInternals&&$corridor["id"]!=21&&$corridor["id"]!=22)
+            {
+                $shuffledTokens = CorridorShuffler::shuffleIndividualCorridorInternals($tokenized);
+                $outputHex = CorridorShuffler::writeToHex($shuffledTokens);
+            }
+            else
+            {
+                $outputHex = CorridorShuffler::writeToHex($tokenized);
+            }
             $patcher->addChange($outputHex,$corridor["address"]);
         }
 

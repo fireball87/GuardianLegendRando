@@ -22,6 +22,7 @@ $writefiles = true;
 
 $secret = false;
 $fasterStartingFire = true;
+$eesAlwaysFarmable = true;
 $generateItems=true;
 $patcher = new Patcher();
 
@@ -29,6 +30,9 @@ $patchBalance = true; //can not be on if secret is on, must be on if corridor mi
 $shuffleCorridors = true;
 $shuffleCorridorInternals = true;
 $randomizeMinibosses = true;
+
+$shuffleBosses = true;
+$shuffleFinalBoss = true;
 
 $forceShields = true; //requires generateItems
 if($log)
@@ -49,20 +53,20 @@ else
 }
 
 
-#shuffle corridor internals
-if($shuffleCorridorInternals)
-{
-    CorridorShuffler::shuffleCorridorInternals($patcher,$log);//this call MUST come before boss shuffling
-}
 
 
+$shuffledBosses = null;
 if($patchBalance && !$secret)
 {
-
-    EnemyBalancer::rebalanceAll($patcher, true, true);
-    if($shuffleCorridors)
+    if($shuffleBosses)
     {
-        CorridorShuffler::shuffleCorridors($patcher, $log);
+        $shuffledBosses = CorridorShuffler::randomizeBosses($patcher,$shuffleFinalBoss);
+    }
+    EnemyBalancer::rebalanceAll($patcher, true, true);
+
+    if($shuffleCorridors||$shuffleBosses)
+    {
+        CorridorShuffler::shuffleCorridors($patcher,$shuffleCorridors,$shuffledBosses, $log);
     }
 
     if($randomizeMinibosses)
@@ -71,7 +75,15 @@ if($patchBalance && !$secret)
     }
 }
 
-
+#shuffle corridor internals
+if($shuffleCorridorInternals)
+{
+    CorridorShuffler::shuffleCorridorInternals($patcher,true,$shuffledBosses,$log);//this call MUST come before boss shuffling
+}
+else if(!is_null($shuffledBosses))
+{
+    CorridorShuffler::shuffleCorridorInternals($patcher,false,$shuffledBosses,$log);//this call MUST come before boss shuffling
+}
 
 
 $map = $generator->run($itemLibraries[0],$itemLibraries[1],$itemLibraries[2],$secret,18,25, 3,0, false,6, 3,10, $log);
@@ -99,6 +111,9 @@ if($writefiles)
 //patch the consecutive fire default value
 if($fasterStartingFire)
     $patcher->addChange("07","087DE");
+
+if($eesAlwaysFarmable)
+    $patcher->addChange("ff","4206");
 
 
 
