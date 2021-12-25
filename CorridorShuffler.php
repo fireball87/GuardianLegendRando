@@ -160,7 +160,12 @@ class CorridorShuffler
 
         if(!is_null($shuffledBosses))
         {
-            $bosses.=$shuffledBosses["c21"][array_key_last($shuffledBosses["c21"])]["id"].$shuffledBosses["final"]["id"];
+            //copying c21 final to the boss array isn't required, the next patch is
+            $c21final = $shuffledBosses["c21"][array_key_last($shuffledBosses["c21"])]["id"];
+            $bosses.=$c21final.$shuffledBosses["final"]["id"];
+
+            $patcher->addChange($c21final,"d3cb");
+
         }
         if ($log)
             echo "\n";
