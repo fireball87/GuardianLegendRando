@@ -15,10 +15,12 @@ require_once("./Items/ItemGenerator.php");
 
 
 
-$log = true;
+$log = false;
 $generator = new Generator();
 
-$writefiles = true;
+$writefiles = false;
+
+$fixHyperLaser = true;
 
 $secret = false;
 $fasterStartingFire = true;
@@ -30,7 +32,9 @@ $patcher = new Patcher();
 
 $patchBalance = true; //can not be on if secret is on, must be on if corridor miniboss or boss shuffling is on
 $shuffleCorridors = true;
-$shuffleCorridorInternals = true;
+
+$shuffleCorridorSkies = true;
+$shuffleCorridorGroundCommands = true;
 $randomizeMinibosses = true;
 
 $shuffleBosses = true;
@@ -84,8 +88,22 @@ if($patchBalance && !$secret)
     }
 }
 
+
+
+if($shuffleCorridorSkies)
+{
+    CorridorShuffler::shufflec2lists($patcher);
+}
+else
+{
+    //fix c16 bug
+    $patcher->addChange("7F","1301b");
+}
+
+
+
 #shuffle corridor internals
-if($shuffleCorridorInternals)
+if($shuffleCorridorGroundCommands)
 {
     CorridorShuffler::shuffleCorridorInternals($patcher,true,$shuffledBosses,$log);//this call MUST come before boss shuffling
 }
@@ -93,6 +111,10 @@ else if(!is_null($shuffledBosses))
 {
     CorridorShuffler::shuffleCorridorInternals($patcher,false,$shuffledBosses,$log);//this call MUST come before boss shuffling
 }
+
+
+
+
 
 
 $map = $generator->run($itemLibraries[0],$itemLibraries[1],$itemLibraries[2],$secret,18,25, 3,0, false,6, 3,10, $log);
@@ -120,6 +142,9 @@ if($writefiles)
 //patch the consecutive fire default value
 if($fasterStartingFire)
     $patcher->addChange("07","087DE");
+
+if($fixHyperLaser)
+    $patcher->addChange("EAEAEA","1FE2C");
 
 if($eesAlwaysFarmable)
     $patcher->addChange("ff","4206");

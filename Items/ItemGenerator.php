@@ -53,7 +53,8 @@ class ItemGenerator
             {
                 $area = rand(0,10);
                 array_push($item_library[$area],Helpers::inthex($i-19));
-                echo "item box ". dechex($i-19) ." is in area ". $area."\n";
+                if($log)
+                    echo "item box ". dechex($i-19) ." is in area ". $area."\n";
 
             }
         }
